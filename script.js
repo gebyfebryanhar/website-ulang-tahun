@@ -1,140 +1,99 @@
+const MUSIC_FILE = "musik.mp3";
+
+let music = new Audio(MUSIC_FILE);
+
+music.loop = true;
+
+let savedTime =
+    parseFloat(localStorage.getItem("musicTime")) || 0;
+
+let musicStarted =
+    localStorage.getItem("musicStarted") === "true";
+
+
 // ===============================
-// PAGE TRANSITION
+// SIMPAN POSISI MUSIK
 // ===============================
 
-document.addEventListener("DOMContentLoaded", function () {
+setInterval(() => {
 
-    document.body.classList.add("loaded");
+    if (!music.paused) {
 
-});
+        localStorage.setItem(
+            "musicTime",
+            music.currentTime
+        );
+
+    }
+
+}, 300);
 
 
 // ===============================
-// CLICK EFFECT
+// SIMPAN SEBELUM PINDAH HALAMAN
 // ===============================
 
-document.addEventListener("click", function (event) {
+window.addEventListener("beforeunload", () => {
 
-    const heart = document.createElement("span");
-
-    heart.innerHTML = "♡";
-
-    heart.style.position = "fixed";
-    heart.style.left = event.clientX + "px";
-    heart.style.top = event.clientY + "px";
-    heart.style.pointerEvents = "none";
-    heart.style.fontSize = "20px";
-    heart.style.color = "#c96d8b";
-    heart.style.zIndex = "9999";
-
-    document.body.appendChild(heart);
-
-    heart.animate(
-
-        [
-            {
-                transform: "translateY(0) scale(1)",
-                opacity: 1
-            },
-
-            {
-                transform: "translateY(-80px) scale(1.5)",
-                opacity: 0
-            }
-        ],
-
-        {
-            duration: 900,
-            easing: "ease-out"
-        }
-
+    localStorage.setItem(
+        "musicTime",
+        music.currentTime
     );
 
-    setTimeout(() => {
-
-        heart.remove();
-
-    }, 900);
-
 });
 
 
 // ===============================
-// CONFETTI
+// KLIK PERTAMA DI WEBSITE
 // ===============================
 
-const confettiContainer =
-    document.getElementById("confetti");
+document.addEventListener(
+    "click",
+    function startMusic() {
 
-if (confettiContainer) {
+        if (!musicStarted) {
 
-    for (let i = 0; i < 70; i++) {
+            music.currentTime = savedTime;
 
-        const piece =
-            document.createElement("span");
+            music.play()
+                .then(() => {
 
-        piece.style.position = "fixed";
+                    localStorage.setItem(
+                        "musicStarted",
+                        "true"
+                    );
 
-        piece.style.width = "8px";
+                })
+                .catch(() => {
 
-        piece.style.height = "8px";
+                    console.log(
+                        "Klik lagi untuk memulai musik."
+                    );
 
-        piece.style.left =
-            Math.random() * 100 + "vw";
+                });
 
-        piece.style.top = "-20px";
+        }
 
-        piece.style.borderRadius = "2px";
+    },
+    { once: true }
+);
 
-        piece.style.background =
-            `hsl(${Math.random() * 360}, 60%, 75%)`;
 
-        piece.style.animation =
-            `fall ${3 + Math.random() * 4}s linear infinite`;
+// ===============================
+// LANJUTKAN MUSIK DI HALAMAN BARU
+// ===============================
 
-        piece.style.animationDelay =
-            Math.random() * 4 + "s";
+if (musicStarted) {
 
-        confettiContainer.appendChild(piece);
+    music.currentTime = savedTime;
 
-    }
+    music.play()
+        .catch(() => {
+
+            console.log(
+                "Browser menunggu interaksi pengguna."
+            );
+
+        });
 
 }
-
-
-// ===============================
-// CONFETTI ANIMATION
-// ===============================
-
-const style =
-    document.createElement("style");
-
-style.innerHTML = `
-
-@keyframes fall {
-
-    0% {
-
-        transform:
-            translateY(-20px)
-            rotate(0deg);
-
-        opacity: 1;
-
-    }
-
-    100% {
-
-        transform:
-            translateY(110vh)
-            rotate(720deg);
-
-        opacity: 0;
-
-    }
-
-}
-
-`;
-
-document.head.appendChild(style);
